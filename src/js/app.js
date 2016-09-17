@@ -1,5 +1,6 @@
 import 'aframe';
 import 'babel-polyfill';
+require('file?name=[name].[ext]!../index.html');
 import {Animation, Entity, Scene} from 'aframe-react';
 import React from 'react';
 import ReactDOM from 'react-dom';
