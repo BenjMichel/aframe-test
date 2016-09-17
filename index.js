@@ -12,11 +12,7 @@ server.listen(port, function () {
 app.use(express.static(__dirname + '/build'));
 
 io.on('connection', function (socket) {
-  console.log('connection');
-
   socket.on('move', function (data) {
-    console.log('move', data);
-    // socket.emit('move', data);
     socket.broadcast.emit('move', data);
   });
 

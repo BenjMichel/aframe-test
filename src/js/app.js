@@ -6,7 +6,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const socket = io();
-// const socket = io.connect();
 
 import Camera from './components/Camera';
 import Cursor from './components/Cursor';
@@ -16,8 +15,8 @@ class BoilerplateScene extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      color: 'red'
-    }
+      camera : { x: 0, y: 0, z: 0 },
+    };
 
     document.addEventListener('keydown', (event) => {
       const keyName = event.key;
@@ -30,41 +29,49 @@ class BoilerplateScene extends React.Component {
       if (event.ctrlKey) {
         // Even though event.key is not 'Control' (i.e. 'a' is pressed),
         // event.ctrlKey may be true if Ctrl key is pressed at the time.
-        alert(`Combination of ctrlKey + ${keyName}`);
+        console.log(`Combination of ctrlKey + ${keyName}`);
       } else {
-        console.log(`Key pressed ${keyName}`);
-        socket.emit('move', keyName);
+        this.handleKey(keyName);
       }
     }, false);
 
-    socket.on('move', function (data) {
-      console.log('move', data);
-    });
   }
 
-  changeColor = () => {
-    const colors = ['red', 'orange', 'yellow', 'green', 'blue'];
-    this.setState({
-      color: colors[Math.floor(Math.random() * colors.length)],
-    });
-  };
+  componentDidMount() {
+     socket.on('move', (data) => {
+       this.setState({ camera: data.camera });
+     });
+  }
+
+  handleKey(keyName) {
+    let newCamera = this.state.camera;
+    if (keyName === 'ArrowUp') {
+      newCamera = { ...this.state.camera, y: this.state.camera.y - 1 };
+    } else if (keyName === 'ArrowDown') {
+      newCamera = { ...this.state.camera, y: this.state.camera.y + 1 };
+    } else if (keyName === 'ArrowRight') {
+      newCamera = { ...this.state.camera, x: this.state.camera.x + 1 };
+    } else if (keyName === 'ArrowLeft') {
+      newCamera = { ...this.state.camera, x: this.state.camera.x - 1 };
+    } else {
+      return;
+    }
+    this.setState({ camera: newCamera });
+    socket.emit('move', { camera: newCamera });
+  }
+
+  formatPosition() {
+    return `${this.state.camera.x} ${this.state.camera.y} ${this.state.camera.z}`
+  }
 
   render () {
     return (
       <Scene>
-        <Camera />
-
+        <Camera position={this.formatPosition()} />
         <Sky/>
-
-        <Entity light={{type: 'ambient', color: '#888'}}/>
         <Entity light={{type: 'directional', intensity: 0.5}} position={[-1, 1, 0]}/>
         <Entity light={{type: 'directional', intensity: 1}} position={[1, 1, 0]}/>
-
-        <Entity geometry="primitive: box" material={{color: this.state.color}}
-                onClick={this.changeColor}
-                position="0 0 -5">
-          <Animation attribute="rotation" dur="5000" repeat="indefinite" to="0 360 360"/>
-        </Entity>
+        <a-sphere position="0 10 -10" radius="1.25" color="#EF2D5E"></a-sphere>
       </Scene>
     );
   }
