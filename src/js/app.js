@@ -5,6 +5,9 @@ import {Animation, Entity, Scene} from 'aframe-react';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+const socket = io();
+// const socket = io.connect();
+
 import Camera from './components/Camera';
 import Cursor from './components/Cursor';
 import Sky from './components/Sky';
@@ -15,6 +18,28 @@ class BoilerplateScene extends React.Component {
     this.state = {
       color: 'red'
     }
+
+    document.addEventListener('keydown', (event) => {
+      const keyName = event.key;
+
+      if (keyName === 'Control') {
+        // not alert when only Control key is pressed.
+        return;
+      }
+
+      if (event.ctrlKey) {
+        // Even though event.key is not 'Control' (i.e. 'a' is pressed),
+        // event.ctrlKey may be true if Ctrl key is pressed at the time.
+        alert(`Combination of ctrlKey + ${keyName}`);
+      } else {
+        console.log(`Key pressed ${keyName}`);
+        socket.emit('move', keyName);
+      }
+    }, false);
+
+    socket.on('move', function (data) {
+      console.log('move', data);
+    });
   }
 
   changeColor = () => {
@@ -27,7 +52,7 @@ class BoilerplateScene extends React.Component {
   render () {
     return (
       <Scene>
-        <Camera><Cursor/></Camera>
+        <Camera />
 
         <Sky/>
 
